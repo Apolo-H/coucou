@@ -29,6 +29,8 @@ import { buildWhatsAppCard } from "./whatsapp";
 import { WHATSAPP_ID } from "../core/whatsapp";
 import { MAIL_ID } from "../core/mail";
 import { buildMailCard } from "./mail";
+import { buildMediaCard, buildMediaPill, type MediaPillHost } from "./media";
+import { MEDIA_ID } from "../core/media";
 import type { Outfit, OutfitSelection } from "../mochi/wardrobe";
 import { language, t, tl, type Msg } from "../i18n/i18n";
 import type { ViewCommand } from "../island/shortcuts";
@@ -214,13 +216,16 @@ function buildOverview(actions: ViewActions): ViewHost {
   const spotifyCard = buildSpotifyCard();
   let spotifyPill: SpotifyPillHost | null = null;
   // WhatsApp's card too: its reply field keeps the draft and the keyboard while messages arrive.
-  // Mail's card too (classic Outlook): the search field keeps its text and the keyboard.
-  const mailCard = buildMailCard({ keyboard: (on) => actions.keyboard(on) });
-  const whatsappCard = buildWhatsAppCard({
-    openSettings: () => actions.openSettingsWindow(),
-    keyboard: (on) => actions.keyboard(on),
-    holdOpen: (on) => actions.holdOpen(on),
-  });
+    // Mail's card too (classic Outlook): the search field keeps its text and the keyboard.
+    const mailCard = buildMailCard({ keyboard: (on) => actions.keyboard(on) });
+    const whatsappCard = buildWhatsAppCard({
+      openSettings: () => actions.openSettingsWindow(),
+      keyboard: (on) => actions.keyboard(on),
+      holdOpen: (on) => actions.holdOpen(on),
+    });
+    // Media card and pill for universal media tracker
+    const mediaCard = buildMediaCard();
+    let mediaPill: MediaPillHost | null = null;
 
   const el = h("div", { class: "view overview" },
     h("div", { class: "left" }, left),
@@ -230,7 +235,7 @@ function buildOverview(actions: ViewActions): ViewHost {
   let pillIds = "";
   let detailOpen = false;
   let lastFocus: string | null = null;
-  let mode: "ticker" | "card" | "plan" | "diff" | "spotify" | "whatsapp" | "mail" | null = null;
+    let mode: "ticker" | "card" | "plan" | "diff" | "spotify" | "whatsapp" | "mail" | "media" | null = null;
   let cardKey = "";
   /** The list row highlighted at the last sync, to scroll only when it moves. */
   let shownSelection: number | null = null;
@@ -379,15 +384,24 @@ function buildOverview(actions: ViewActions): ViewHost {
         }
         ticker.sync(task);
       } else if (task && task.id === SPOTIFY_ID) {
-        // Its own card for every state: playing, idle, not installed.
-        if (mode !== "spotify") {
-          clear(leftBody);
-          leftBody.append(spotifyCard.el);
-          mode = "spotify";
-          cardKey = "";
-        }
-        spotifyCard.sync();
-      } else if (task && task.id === MAIL_ID) {
+              // Its own card for every state: playing, idle, not installed.
+              if (mode !== "spotify") {
+                clear(leftBody);
+                leftBody.append(spotifyCard.el);
+                mode = "spotify";
+                cardKey = "";
+              }
+              spotifyCard.sync();
+            } else if (task && task.id === MEDIA_ID) {
+              // Universal Media Tracker card
+              if (mode !== "media") {
+                clear(leftBody);
+                leftBody.append(mediaCard.el);
+                mode = "media";
+                cardKey = "";
+              }
+              mediaCard.sync();
+            } else if (task && task.id === MAIL_ID) {
         if (mode !== "mail") {
           clear(leftBody);
           leftBody.append(mailCard.el);
@@ -435,18 +449,22 @@ function buildOverview(actions: ViewActions): ViewHost {
         clear(pills);
         spotifyPill = null;
         for (const t of others) {
-          if (t.id === SPOTIFY_ID) {
-            spotifyPill = buildSpotifyPill(t, () => actions.setFocus(t.id));
-            pills.append(spotifyPill.el);
-          } else {
-            pills.append(buildPill(t, actions));
-          }
-        }
-        pruneMiniBots();
-      }
-      spotifyPill?.sync();
-    },
-  };
+                  if (t.id === SPOTIFY_ID) {
+                    spotifyPill = buildSpotifyPill(t, () => actions.setFocus(t.id));
+                    pills.append(spotifyPill.el);
+                  } else if (t.id === MEDIA_ID) {
+                    mediaPill = buildMediaPill(t, () => actions.setFocus(t.id));
+                    pills.append(mediaPill.el);
+                  } else {
+                    pills.append(buildPill(t, actions));
+                  }
+                }
+                pruneMiniBots();
+              }
+              spotifyPill?.sync();
+              mediaPill?.sync();
+            },
+          };
 }
 
 /**

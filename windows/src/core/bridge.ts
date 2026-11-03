@@ -10,6 +10,7 @@ import type { RecapHistory, RecapPrefs } from "../recap/summary";
 import type { SpotifyState } from "./spotify";
 import type { UpdateStatus } from "./update";
 import type { WaIslandView, WaSettingsView, WaTestResult } from "./whatsapp";
+import type { MediaState, LyricsResult } from "./media";
 
 export const IS_TAURI =
   typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -447,15 +448,34 @@ export const Bridge = {
   desktopSetAsleep: (asleep: boolean) => call<void>("desktop_mochi_set_asleep", { asleep }),
 
   // ── Spotify (src-tauri/src/spotify.rs) ────────────────────────────────────
-  /** Reads the player again (the card came on screen) and reports it. */
-  spotifyRefresh: () => call<SpotifyState | null>("spotify_refresh"),
-  /** True when Spotify took it. `value`: seconds for seek, 0/1 for shuffle and repeat, 0…100 for volume. */
-  spotifyControl: (action: SpotifyAction, value?: number) =>
-    call<boolean>("spotify_control", { action, value: value ?? null }),
-  /** Brings Spotify forward or starts it; without it, its download page. */
-  spotifyOpen: () => call<boolean>("spotify_open"),
-  /** Whether there is a Spotify to launch (Settings). */
-  spotifyInstalled: () => call<boolean>("spotify_installed"),
+    /** Reads the player again (the card came on screen) and reports it. */
+    spotifyRefresh: () => call<SpotifyState | null>("spotify_refresh"),
+    /** True when Spotify took it. `value`: seconds for seek, 0/1 for shuffle and repeat, 0…100 for volume. */
+    spotifyControl: (action: SpotifyAction, value?: number) =>
+      call<boolean>("spotify_control", { action, value: value ?? null }),
+    /** Brings Spotify forward or starts it; without it, its download page. */
+    spotifyOpen: () => call<boolean>("spotify_open"),
+    /** Whether there is a Spotify to launch (Settings). */
+    spotifyInstalled: () => call<boolean>("spotify_installed"),
+
+    // ── Universal Media Tracker (src-tauri/src/media.rs) ──────────────────────
+    /** Reads the current media state (player, track, timeline). */
+    mediaRefresh: () => call<MediaState | null>("media_get_state"),
+    /** Play/pause toggle. */
+    mediaPlayPause: () => call<boolean>("media_play_pause"),
+    /** Next track. */
+    mediaNext: () => call<boolean>("media_next"),
+    /** Previous track. */
+    mediaPrevious: () => call<boolean>("media_previous"),
+    /** Seek to position (seconds). */
+    mediaSeek: (position: number) => call<boolean>("media_seek", { position }),
+    /** Set volume 0–100. */
+    mediaSetVolume: (volume: number) => call<void>("media_set_volume", { volume }),
+    /** Get artwork as bytes. */
+    mediaGetArtwork: () => call<number[] | null>("media_get_artwork"),
+    /** Get lyrics for current track. */
+    mediaGetLyrics: (title: string, artist: string, album: string, duration: number) =>
+      call<LyricsResult | null>("media_get_lyrics", { title, artist, album, duration }),
 
   // ── WhatsApp (src-tauri/src/whatsapp) ─────────────────────────────────────
   /** The island's copy, asked once at start (then the "whatsapp" event). Island only. */

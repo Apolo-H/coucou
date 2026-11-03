@@ -36,6 +36,7 @@ mod shortcuts;
 mod sounds;
 mod speech;
 mod spotify;
+mod media;  // Universal Media Tracker (GSMTC)
 mod tray;
 mod update;
 mod voice;
@@ -133,8 +134,9 @@ fn save_settings(app: AppHandle, shared: State<Shared>, settings: Settings) {
         island::apply_geometry(&app, &settings.screen, collapsed.then_some(size));
     }
     integrations::settings_saved(&app, &settings.active_integrations);
-    spotify::sync(&app, &settings.active_integrations);
-    whatsapp::sync(&settings.active_integrations);
+        spotify::sync(&app, &settings.active_integrations);
+        media::sync(&app, settings.active_integrations.contains(&"integration_media".to_string()));
+        whatsapp::sync(&settings.active_integrations);
     if shortcuts_changed {
         shortcuts::apply(&app, &settings.shortcuts);
     }
@@ -1003,10 +1005,18 @@ pub fn run() {
             sounds::reveal_sounds_folder,
             sounds::reload_sounds,
             spotify::spotify_refresh,
-            spotify::spotify_control,
-            spotify::spotify_open,
-            spotify::spotify_installed,
-            whatsapp::whatsapp_island,
+                        spotify::spotify_control,
+                        spotify::spotify_open,
+                        spotify::spotify_installed,
+                        media::media_get_state,
+                        media::media_play_pause,
+                        media::media_next,
+                        media::media_previous,
+                        media::media_seek,
+                        media::media_set_volume,
+                        media::media_get_artwork,
+                        media::media_get_lyrics,
+                        whatsapp::whatsapp_island,
             whatsapp::whatsapp_open,
             whatsapp::whatsapp_close,
             whatsapp::whatsapp_send,
@@ -1103,8 +1113,9 @@ pub fn run() {
             integrations::start(handle.clone());
             mail::start(handle.clone());
             spotify::sync(&handle, &loaded.active_integrations);
-            // WhatsApp (experimental): nothing runs unless it is turned on and its pill is active.
-            whatsapp::start(&handle, &loaded.active_integrations);
+                        media::sync(&handle, loaded.active_integrations.contains(&"integration_media".to_string()));
+                        // WhatsApp (experimental): nothing runs unless it is turned on and its pill is active.
+                        whatsapp::start(&handle, &loaded.active_integrations);
             shortcuts::apply(&handle, &loaded.shortcuts);
             // New versions: nothing goes to GitHub until the user agrees (update.rs).
             update::start(handle.clone());

@@ -138,6 +138,9 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // (src-tauri/src/spotify.rs).
   { id: "integration_spotify", name: "Spotify", color: "#1DB954", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
+  // Universal Media Tracker (GSMTC) — captures any player: Spotify, YouTube Music, browsers, etc.
+  { id: "integration_media", name: "Media", color: "#1DB954", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
   // Mail: classic Outlook on Windows, driven on this computer through its COM objects
   // (src-tauri/src/mail). The new Outlook has none, and Linux has no Outlook.
   { id: "integration_mail", name: "Mail", color: "#2F8CFF", category: "service",
@@ -193,6 +196,7 @@ export function sessionSubtitle(id: string): string {
     case "agent_codex": return "Codex";
     case "agent_hermes": return "Hermes";
     case "agent_claude-desktop": return "Claude Desktop";
+    case "integration_media": return "Media";
     default: return N_("Agent");
   }
 }

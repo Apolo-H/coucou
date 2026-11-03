@@ -184,8 +184,9 @@ export const DEFAULT_SETTINGS: Settings = {
   closedIsland: "mochi",
   absenceInterval: 180,
   activeIntegrations: [
-    "integration_resend", "integration_n8n", "integration_vercel", "integration_github",
-  ],
+      "integration_resend", "integration_n8n", "integration_vercel", "integration_github",
+      "integration_media",
+    ],
   mainPill: DEFAULT_MAIN_PILL,
   screen: "primary",
   autostart: false,

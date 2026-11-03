@@ -3596,3 +3596,284 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* ==========================================================================
+   Media Pill & Lyrics Panel — Nusa 1.1 style
+   ========================================================================== */
+
+/* ── Media Pill (compact) ─────────────────────────────────────────────────── */
+.media-pill .lbl {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  transition: max-width 0.2s cubic-bezier(0.3, 1.2, 0.4, 1);
+}
+
+.media-pill.controls .lbl {
+  max-width: 80px;
+}
+
+.np-pill.media-pill .mini-bot {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.np-pill.media-pill .mini-bot.dancing {
+  animation: miniDance 0.8s ease-in-out infinite;
+}
+
+@keyframes miniDance {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  25% { transform: translateY(-2px) rotate(2deg); }
+  50% { transform: translateY(0) rotate(-2deg); }
+  75% { transform: translateY(2px) rotate(2deg); }
+}
+
+/* ── Media Card (expanded) ────────────────────────────────────────────────── */
+.media-card .np-art {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+.media-card .np-art.has-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-card .np-art.has-art svg {
+  display: none;
+}
+
+.media-card .np-title {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.media-card .np-sub {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+.media-card .np-progress {
+  margin: 10px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-card .np-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--muted-foreground);
+  min-width: 34px;
+}
+
+.media-card .np-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.media-card .np-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.media-card .np-icon:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.media-card .np-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-card .np-play:hover {
+  filter: brightness(1.1);
+}
+
+.media-card .np-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.media-card .np-vol-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── Lyrics Panel ─────────────────────────────────────────────────────────── */
+.lyrics-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  display: none;
+  flex-direction: column;
+  max-height: 320px;
+  overflow: hidden;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.lyrics-panel.open {
+  display: flex;
+}
+
+.lyrics-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lyrics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.lyrics-head-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lyrics-title {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lyrics-artist {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lyrics-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lyrics-close:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.lyrics-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.lyrics-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.lyric-line {
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lyric-line:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.lyric-line.current {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Karaoke progress highlight (CSS-based) */
+.lyric-line.current::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--karaoke-progress, 0%);
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Scrollbar styling */
+.lyrics-list::-webkit-scrollbar {
+  width: 6px;
+}
+.lyrics-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lyrics-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.lyrics-list::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}

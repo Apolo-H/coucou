@@ -879,8 +879,10 @@ const INTEGRATIONS: IntegrationDef[] = [
   { id: "integration_calcom", name: "Cal.com", color: "#C9956A",
     fields: [{ key: "calcom-api-key", label: N_("API key"), placeholder: "cal_…", secret: true }] },
   // Nothing to enter: Spotify is read from the OS (src-tauri/src/spotify.rs).
-  { id: "integration_spotify", name: "Spotify", color: "#1DB954", fields: [] },
-];
+    { id: "integration_spotify", name: "Spotify", color: "#1DB954", fields: [] },
+    // Nothing to enter: Media is read from GSMTC (src-tauri/src/media.rs).
+    { id: "integration_media", name: "Media", color: "#1DB954", fields: [] },
+  ];
 
 const MAX_ACTIVE = MAX_DECLARED;
 
