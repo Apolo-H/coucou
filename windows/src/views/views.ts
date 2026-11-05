@@ -453,7 +453,7 @@ function buildOverview(actions: ViewActions): ViewHost {
                     spotifyPill = buildSpotifyPill(t, () => actions.setFocus(t.id));
                     pills.append(spotifyPill.el);
                   } else if (t.id === MEDIA_ID) {
-                    mediaPill = buildMediaPill(t, () => actions.setFocus(t.id));
+                    mediaPill = buildMediaPill(t, () => actions.setFocus(t.id), mediaCard.toggleLyrics);
                     pills.append(mediaPill.el);
                   } else {
                     pills.append(buildPill(t, actions));

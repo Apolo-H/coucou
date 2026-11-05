@@ -5,7 +5,6 @@ import { h, svg, clear, dot } from "./dom";
 import { ICONS } from "./icons";
 import { Media, fmtTime } from "../core/media";
 import { buildLyricsPanel } from "./lyrics";
-import { pillDefinition } from "../core/pills";
 import { t } from "../i18n/i18n";
 
 export interface MediaPillHost {
@@ -44,20 +43,25 @@ function mediaButton(color: string, icon: string, onClick: () => void, title: st
   return b;
 }
 
-export function buildMediaPill(task: { id: string; name: string; color: string }, onTap: () => void): MediaPillHost {
+export function buildMediaPill(
+  task: { id: string; name: string; color: string },
+  onTap: () => void,
+  onLyrics: () => void,
+): MediaPillHost {
   const color = task.color || MEDIA_COLOR;
   const mini = h("div", { class: "mini-bot" }); // placeholder for Mochi mini
+  mini.style.background = color;
   const label = h("span", { class: "lbl", text: task.name });
-  const playBtn = mediaButton(color, ICONS.play, () => void Media.togglePlayPause(), "Play/Pause");
-  const nextBtn = mediaButton(color, ICONS.forward, () => void Media.next(), "Next");
-  const prevBtn = mediaButton(color, ICONS.backward, () => void Media.previous(), "Previous");
-  const lyricsBtn = mediaButton(color, ICONS.bubbleRound, () => lyricsPanel.toggle(), "Lyrics");
+  const playBtn = mediaButton(color, ICONS.play, () => void Media.togglePlayPause(), t("Play"));
+  const nextBtn = mediaButton(color, ICONS.forward, () => void Media.next(), t("Next"));
+  const prevBtn = mediaButton(color, ICONS.backward, () => void Media.previous(), t("Previous"));
+  const lyricsBtn = mediaButton(color, ICONS.bubbleRound, () => {
+    onTap();
+    onLyrics();
+  }, t("Lyrics"));
   const controls = h("div", { class: "np-pill-controls" }, prevBtn, playBtn, nextBtn, lyricsBtn);
   const pill = h("div", { class: "pill np-pill media-pill", onclick: onTap }, mini, label, controls);
   pill.style.borderColor = `${color}24`;
-
-  const lyricsPanel = buildLyricsPanel();
-  // Lyrics panel is appended to the island body by the island host
 
   let hovered = false;
   let playing: boolean | null = null;
@@ -72,7 +76,6 @@ export function buildMediaPill(task: { id: string; name: string; color: string }
       const display = `${track.title} — ${track.artist}`;
       if (label.textContent !== display) label.textContent = display;
     } else {
-      pillDefinition(task.id);
       if (label.textContent !== task.name) label.textContent = task.name;
     }
 
@@ -131,6 +134,7 @@ export function buildMediaPill(task: { id: string; name: string; color: string }
 export interface MediaCardHost {
   el: HTMLElement;
   sync(): void;
+  toggleLyrics(): void;
 }
 
 class ProgressBar {
@@ -227,13 +231,15 @@ export function buildMediaCard(): MediaCardHost {
   const progressRow = h("div", { class: "np-progress" }, elapsed, progress.el, remaining);
 
   // Controls row
-  const shuffle = iconBtn(ICONS.shuffle, 10, 2.2, () => { /* not supported globally */ });
   const prev = iconBtn(ICONS.backward, 11, 0, () => void Media.previous());
   const next = iconBtn(ICONS.forward, 11, 0, () => void Media.next());
-  const repeat = iconBtn(ICONS.repeat, 10, 2.2, () => { /* not supported globally */ });
+  prev.title = t("Previous");
+  next.title = t("Next");
   prev.style.color = "#C5C8CD";
   next.style.color = "#C5C8CD";
   const play = h("button", { class: "np-play", onclick: () => void Media.togglePlayPause() });
+  play.style.background = color;
+  play.style.color = "#101114";
 
   // Volume
   const volIcon = h("span", { class: "np-vol-icon" });
@@ -244,8 +250,8 @@ export function buildMediaCard(): MediaCardHost {
   const volumeRow = h("div", { class: "np-volume" }, volIcon, volume.el);
 
   const controlsRow = h("div", { class: "np-controls" },
-    shuffle, prev, play, next, repeat,
-    h("div", { style: "flex:1" }),
+    h("div", { class: "np-buttons" }, prev, play, next),
+    h("div", { class: "grow" }),
     volumeRow
   );
 
@@ -262,7 +268,9 @@ export function buildMediaCard(): MediaCardHost {
     const pos = dragFraction != null ? dragFraction * dur : s.timeline.position;
     const rem = Math.max(0, dur - pos);
     elapsed.textContent = fmtTime(pos);
-    remaining.textContent = `-${fmtTime(rem)}`;
+    remaining.textContent = dur > 0 ? `-${fmtTime(rem)}` : "";
+    progress.enabled = !!track && dur > 0;
+    volume.enabled = track != null;
     progress.set(dur > 0 ? pos / dur : 0);
 
     // Play button icon
@@ -270,8 +278,11 @@ export function buildMediaCard(): MediaCardHost {
     play.append(svg(s.playing ? ICONS.pause : ICONS.play, 16));
 
     // Volume icon
-    volIcon.textContent = s.volume === 0 ? "🔇" : s.volume < 50 ? "🔉" : "🔊";
+    clear(volIcon);
+    const volumeIcon = s.volume === 0 ? ICONS.volume0 : s.volume < 33 ? ICONS.volume1 : s.volume < 66 ? ICONS.volume2 : ICONS.volume3;
+    volIcon.append(svg(volumeIcon, 12, { stroke: 2 }));
     volume.set(s.volume / 100);
+    volumeRow.title = t("Volume {0}%", { 0: Math.round(s.volume) });
   };
 
   const sync = () => {
@@ -280,24 +291,27 @@ export function buildMediaCard(): MediaCardHost {
 
     if (track) {
       title.textContent = track.title || "Unknown Title";
-      subtitle.textContent = `${track.artist} • ${track.album || "Unknown Album"}`;
+      const details = [track.artist, track.album].filter(Boolean);
 
       // Artwork
       if (track.artworkUrl) {
-        artImg.src = track.artworkUrl;
+        if (artImg.getAttribute("src") !== track.artworkUrl) artImg.src = track.artworkUrl;
         art.classList.add("has-art");
       } else {
         art.classList.remove("has-art");
+        artImg.removeAttribute("src");
       }
 
       // Source app indicator
       const source = track.sourceAppId?.replace(".exe", "") || "Media";
-      subtitle.textContent += ` • ${source}`;
+      subtitle.textContent = [...details, source].join(" · ");
     } else {
-      title.textContent = "No media playing";
-      subtitle.textContent = "Open a music app to see controls";
+      title.textContent = t("Not playing");
+      subtitle.textContent = t("Open a music app to see controls");
       art.classList.remove("has-art");
+      artImg.removeAttribute("src");
     }
+    card.classList.toggle("idle", !track);
 
     paintProgress();
 
@@ -310,9 +324,6 @@ export function buildMediaCard(): MediaCardHost {
   // Subscribe
   Media.subscribe(sync);
 
-  // Expose lyrics panel for pill to toggle
-  (card as any).lyricsPanel = lyricsPanel;
-
   sync();
-  return { el: card, sync };
+  return { el: card, sync, toggleLyrics: lyricsPanel.toggle };
 }

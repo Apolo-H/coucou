@@ -3612,6 +3612,7 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 
 .media-pill.controls .lbl {
   max-width: 80px;
+  padding-right: 92px;
 }
 
 .np-pill.media-pill .mini-bot {
@@ -3642,6 +3643,22 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
   background: var(--card-bg);
 }
 
+.media-card {
+  --accent: #1db954;
+  --accent-foreground: #101114;
+  --card-bg: var(--card);
+  --border: rgba(255, 255, 255, 0.1);
+  --foreground: var(--ink);
+  --muted-foreground: var(--dim-2);
+  gap: 2px;
+  padding-bottom: 6px;
+}
+
+.media-card.idle .np-progress,
+.media-card.idle .np-controls {
+  display: none;
+}
+
 .media-card .np-art.has-art img {
   width: 100%;
   height: 100%;
@@ -3661,14 +3678,15 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 .media-card .np-sub {
   font-size: 11px;
   color: var(--muted-foreground);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .media-card .np-progress {
-  margin: 10px 0 8px;
+  margin: 8px 0 2px;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-top: 0;
 }
 
 .media-card .np-time {
@@ -3681,8 +3699,8 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 .media-card .np-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 10px;
+  padding-top: 2px;
 }
 
 .media-card .np-icon {
@@ -3691,7 +3709,7 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
   border-radius: 50%;
   background: transparent;
   border: none;
-  color: var(--foreground);
+  color: var(--dim-2);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
@@ -3702,11 +3720,9 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 }
 
 .media-card .np-play {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-foreground);
   border: none;
   cursor: pointer;
   display: flex;
@@ -3726,8 +3742,11 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
 }
 
 .media-card .np-vol-icon {
-  font-size: 14px;
-  line-height: 1;
+  color: var(--dim-3);
+}
+
+.media-card .np-vol-icon svg {
+  display: block;
 }
 
 /* ── Lyrics Panel ─────────────────────────────────────────────────────────── */

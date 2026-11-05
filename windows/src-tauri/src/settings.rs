@@ -149,7 +149,7 @@ impl Default for Settings {
             absence_interval: 180.0,
             active_integrations: vec![
                 "integration_resend".into(),
-                "integration_n8n".into(),
+                "integration_media".into(),
                 "integration_vercel".into(),
                 "integration_github".into(),
             ],
@@ -252,7 +252,21 @@ fn parse(bytes: &[u8]) -> Option<Settings> {
         return None;
     };
     let whole = serde_json::from_value(Value::Object(fields.clone()));
-    Some(whole.unwrap_or_else(|_| salvage(fields)))
+    let mut settings = whole.unwrap_or_else(|_| salvage(fields));
+    migrate_default_media(&mut settings);
+    Some(settings)
+}
+
+fn migrate_default_media(settings: &mut Settings) {
+    const PREVIOUS_DEFAULT: [&str; 4] = [
+        "integration_resend",
+        "integration_n8n",
+        "integration_vercel",
+        "integration_github",
+    ];
+    if settings.active_integrations.iter().map(String::as_str).eq(PREVIOUS_DEFAULT) {
+        settings.active_integrations = Settings::default().active_integrations;
+    }
 }
 
 /// Settings from the fields of a settings.json that does not load as a whole.
@@ -550,6 +564,37 @@ mod tests {
         assert_eq!(shown(&load_from(&file)), defaults());
         assert!(names(&dir).is_empty());
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn media_is_in_the_default_active_integrations() {
+        assert_eq!(
+            Settings::default().active_integrations,
+            vec![
+                "integration_resend".to_string(),
+                "integration_media".to_string(),
+                "integration_vercel".to_string(),
+                "integration_github".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn the_previous_default_integrations_are_upgraded_to_show_media() {
+        let loaded = parse(&custom_with(
+            "activeIntegrations",
+            Some(json!([
+                "integration_resend",
+                "integration_n8n",
+                "integration_vercel",
+                "integration_github",
+            ])),
+        ))
+        .unwrap();
+        assert_eq!(
+            loaded.active_integrations,
+            Settings::default().active_integrations
+        );
     }
 
     #[test]

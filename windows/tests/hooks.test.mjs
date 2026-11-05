@@ -40,7 +40,10 @@ beforeEach(() => {
   State.pendingApproval = null;
   State.approvalQueue = [];
   State.focusBeforeApproval = null;
-  State.settings = { ...DEFAULT_SETTINGS };
+  State.settings = {
+    ...DEFAULT_SETTINGS,
+    activeIntegrations: [...DEFAULT_SETTINGS.activeIntegrations, "integration_n8n"],
+  };
   State.loadIntegrationTasks();
 });
 

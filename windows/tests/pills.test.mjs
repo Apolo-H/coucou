@@ -10,6 +10,8 @@ import {
 import { DEFAULT_SETTINGS, State } from "../src/core/state.ts";
 import { installFakeDom } from "./fakedom.mjs";
 import { renderIntegrationCard } from "../src/views/integrations.ts";
+import { Media } from "../src/core/media.ts";
+import { buildMediaCard, buildMediaPill } from "../src/views/media.ts";
 
 installFakeDom();
 
@@ -49,7 +51,7 @@ test("the catalog holds the Mac's pills with the Claude Code label for Windows a
     ["integration_whatsapp", "WhatsApp", "#25D366", "service", "Integration"],
   ];
   assert.deepEqual(
-    PILL_CATALOG.filter((p) => !["integration_gitlab", "integration_gitea"].includes(p.id))
+    PILL_CATALOG.filter((p) => !["integration_gitlab", "integration_gitea", "integration_media"].includes(p.id))
       .map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
     mac,
   );
@@ -260,10 +262,35 @@ test("an old settings file gets Claude Code as its main pill and keeps its integ
   State.settings = { ...DEFAULT_SETTINGS, mainPill: undefined };
   State.loadIntegrationTasks();
   assert.deepEqual(ids(), [
-    "integration_claude", "integration_resend", "integration_n8n", "integration_vercel", "integration_github",
+    "integration_claude", "integration_resend", "integration_vercel", "integration_github", "integration_media",
   ]);
   assert.equal(State.settings.mainPill, "integration_claude");
   assert.equal(State.tasks[0].name, "Claude Code");
+});
+
+test("the media pill opens the lyrics panel in its card", () => {
+  Media.state = {
+    running: false,
+    playing: false,
+    status: "Unknown",
+    track: null,
+    timeline: { position: 0, endTime: 0, lastUpdated: 0 },
+    volume: 50,
+  };
+  const card = buildMediaCard();
+  let focused = false;
+  const pill = buildMediaPill(
+    { id: "integration_media", name: "Media", color: "#1DB954" },
+    () => { focused = true; },
+    card.toggleLyrics,
+  );
+  const lyricsButton = pill.el.find(".np-pill-btn").at(-1);
+  lyricsButton.fire("click");
+
+  assert.equal(focused, true);
+  assert.equal(card.el.classList.contains("idle"), true);
+  assert.equal(card.el.querySelector(".lyrics-panel").classList.contains("open"), true);
+  assert.equal(card.el.find(".np-icon").length, 2);
 });
 
 test("switching the main pill frees its slot and the old main pill goes when idle", () => {
